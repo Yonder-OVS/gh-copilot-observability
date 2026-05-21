@@ -1,0 +1,202 @@
+{
+  "title": "GitHub Copilot — Usage & Performance",
+  "uid": "copilot-usage",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-24h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "model",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": "label_values(copilot_gen_ai_client_token_usage_count, gen_ai_request_model)",
+        "label": "Model",
+        "multi": true,
+        "includeAll": true,
+        "current": { "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Total Input Tokens (24h)",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["sum"] }, "colorMode": "background", "graphMode": "area", "textMode": "auto" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "blue", "value": null }] }, "unit": "locale" } },
+      "targets": [
+        {
+          "expr": "sum(increase(copilot_gen_ai_client_token_usage_count{gen_ai_token_type=\"input\", gen_ai_request_model=~\"$model\"}[24h]))",
+          "legendFormat": "Input tokens"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Total Output Tokens (24h)",
+      "type": "stat",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["sum"] }, "colorMode": "background", "graphMode": "area", "textMode": "auto" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }] }, "unit": "locale" } },
+      "targets": [
+        {
+          "expr": "sum(increase(copilot_gen_ai_client_token_usage_count{gen_ai_token_type=\"output\", gen_ai_request_model=~\"$model\"}[24h]))",
+          "legendFormat": "Output tokens"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Chat Sessions (24h)",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["sum"] }, "colorMode": "background", "graphMode": "area", "textMode": "auto" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "purple", "value": null }] }, "unit": "short" } },
+      "targets": [
+        {
+          "expr": "sum(increase(copilot_copilot_chat_session_count_total[24h]))",
+          "legendFormat": "Sessions"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Edit Acceptance Rate (24h)",
+      "type": "stat",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "auto" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "red", "value": null }, { "color": "yellow", "value": 0.5 }, { "color": "green", "value": 0.75 }] }, "unit": "percentunit", "min": 0, "max": 1 } },
+      "targets": [
+        {
+          "expr": "sum(increase(copilot_copilot_chat_edit_acceptance_count_total{copilot_chat_edit_outcome=\"accepted\"}[24h])) / sum(increase(copilot_copilot_chat_edit_acceptance_count_total[24h]))",
+          "legendFormat": "Acceptance rate"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Token Usage Over Time",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] } },
+      "targets": [
+        {
+          "expr": "sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_token_usage_count{gen_ai_token_type=\"input\", gen_ai_request_model=~\"$model\"}[5m]) * 300)",
+          "legendFormat": "Input — {{gen_ai_request_model}}"
+        },
+        {
+          "expr": "sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_token_usage_count{gen_ai_token_type=\"output\", gen_ai_request_model=~\"$model\"}[5m]) * 300)",
+          "legendFormat": "Output — {{gen_ai_request_model}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "LLM Latency (p50 / p95 / p99)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 } } },
+      "options": { "tooltip": { "mode": "multi" } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(copilot_gen_ai_client_operation_duration_bucket{gen_ai_request_model=~\"$model\"}[5m])))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(copilot_gen_ai_client_operation_duration_bucket{gen_ai_request_model=~\"$model\"}[5m])))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(copilot_gen_ai_client_operation_duration_bucket{gen_ai_request_model=~\"$model\"}[5m])))",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Tool Call Success Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "custom": { "lineWidth": 2 } } },
+      "targets": [
+        {
+          "expr": "sum by (gen_ai_tool_name) (rate(copilot_copilot_chat_tool_call_count_total{success=\"true\"}[5m])) / sum by (gen_ai_tool_name) (rate(copilot_copilot_chat_tool_call_count_total[5m]))",
+          "legendFormat": "{{gen_ai_tool_name}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Time to First Token",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 } } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, gen_ai_request_model) (rate(copilot_copilot_chat_time_to_first_token_bucket{gen_ai_request_model=~\"$model\"}[5m])))",
+          "legendFormat": "p50 — {{gen_ai_request_model}}"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, gen_ai_request_model) (rate(copilot_copilot_chat_time_to_first_token_bucket{gen_ai_request_model=~\"$model\"}[5m])))",
+          "legendFormat": "p95 — {{gen_ai_request_model}}"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Edit Acceptance by Source",
+      "type": "barchart",
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "options": { "xField": "copilot_chat_edit_source", "stacking": "normal" },
+      "targets": [
+        {
+          "expr": "sum by (copilot_chat_edit_source, copilot_chat_edit_outcome) (increase(copilot_copilot_chat_edit_acceptance_count_total[24h]))",
+          "legendFormat": "{{copilot_chat_edit_source}} — {{copilot_chat_edit_outcome}}"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Lines of Code Added/Removed by Agent",
+      "type": "barchart",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "targets": [
+        {
+          "expr": "sum by (type) (increase(copilot_copilot_chat_lines_of_code_count_total[24h]))",
+          "legendFormat": "{{type}}"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Recent Traces (Jaeger)",
+      "type": "traces",
+      "gridPos": { "x": 0, "y": 28, "w": 24, "h": 10 },
+      "datasource": { "type": "jaeger", "uid": "jaeger" },
+      "targets": [
+        {
+          "queryType": "search",
+          "serviceName": "copilot-chat",
+          "operationName": "invoke_agent",
+          "limit": 20
+        }
+      ]
+    }
+  ]
+}
