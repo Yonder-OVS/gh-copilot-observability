@@ -11,7 +11,7 @@ local, open-source stack. No Azure account required.
 | Traces       | Jaeger         | `16686` (UI)           |
 | Metrics      | Prometheus     | `9090`                 |
 | Logs         | Loki           | `3100`                 |
-| Dashboards   | Grafana        | `3000`                 |
+| Dashboards   | Grafana        | `4000`                 |
 
 ## Quick Start
 
@@ -20,7 +20,7 @@ docker compose up -d
 ```
 
 Wait ~15s for all services to be healthy, then open:
-- **Grafana** → http://localhost:3000  (admin / admin)
+- **Grafana** → http://localhost:4000  (admin / admin)
 - **Jaeger**  → http://localhost:16686
 - **Prometheus** → http://localhost:9090
 
