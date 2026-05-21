@@ -165,7 +165,9 @@
       "targets": [
         {
           "expr": "sum by (copilot_chat_edit_source, copilot_chat_edit_outcome) (increase(copilot_copilot_chat_edit_acceptance_count_total[24h]))",
-          "legendFormat": "{{copilot_chat_edit_source}} — {{copilot_chat_edit_outcome}}"
+          "legendFormat": "{{copilot_chat_edit_source}} — {{copilot_chat_edit_outcome}}",
+          "format": "table",
+          "instant": true
         }
       ]
     },
@@ -180,7 +182,9 @@
       "targets": [
         {
           "expr": "sum by (type) (increase(copilot_copilot_chat_lines_of_code_count_total[24h]))",
-          "legendFormat": "{{type}}"
+          "legendFormat": "{{type}}",
+          "format": "table",
+          "instant": true
         }
       ]
     },
@@ -248,17 +252,16 @@
     },
     {
       "id": 15,
-      "title": "Sessions by Hour of Day",
-      "type": "barchart",
+      "title": "Sessions per Hour",
+      "type": "timeseries",
       "gridPos": { "x": 0, "y": 44, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "continuous-blues" } } },
-      "options": { "orientation": "vertical", "legend": { "displayMode": "hidden" } },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "continuous-blues" }, "custom": { "drawStyle": "bars", "fillOpacity": 60, "lineWidth": 1 } } },
+      "options": { "legend": { "displayMode": "hidden" }, "tooltip": { "mode": "single" } },
       "targets": [
         {
-          "expr": "sum by (le) (increase(copilot_copilot_chat_session_count_total[1h]))",
-          "legendFormat": "Sessions",
-          "format": "time_series"
+          "expr": "sum(rate(copilot_copilot_chat_session_count_total[5m]) * 3600)",
+          "legendFormat": "Sessions/hr"
         }
       ]
     },
