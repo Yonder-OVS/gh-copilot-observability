@@ -311,12 +311,41 @@
     {
       "id": 19,
       "title": "Recent Traces (Jaeger)",
-      "type": "traces",
+      "type": "table",
       "gridPos": { "x": 0, "y": 60, "w": 24, "h": 10 },
       "datasource": { "type": "jaeger", "uid": "jaeger" },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "displayName": "StartTime", "desc": true }]
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "traceID" },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View trace",
+                    "url": "",
+                    "internal": {
+                      "datasourceUid": "jaeger",
+                      "datasourceName": "Jaeger",
+                      "query": { "queryType": "getTrace", "query": "${__value.raw}" }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
       "targets": [
         {
           "queryType": "search",
+          "service": "copilot-chat",
           "limit": 20
         }
       ]
