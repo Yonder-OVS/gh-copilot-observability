@@ -161,7 +161,7 @@
       "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short" } },
-      "options": { "xField": "copilot_chat_edit_source", "stacking": "normal" },
+      "options": { "xField": "copilot_chat_edit_source", "stacking": "normal", "xTickLabelRotation": -45, "xTickLabelMaxLength": 20 },
       "targets": [
         {
           "expr": "sum by (copilot_chat_edit_source, copilot_chat_edit_outcome) (increase(copilot_copilot_chat_edit_acceptance_count_total[24h]))",
@@ -176,6 +176,7 @@
       "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "fieldConfig": { "defaults": { "unit": "short" } },
+      "options": { "xTickLabelRotation": -45, "xTickLabelMaxLength": 20 },
       "targets": [
         {
           "expr": "sum by (type) (increase(copilot_copilot_chat_lines_of_code_count_total[24h]))",
@@ -185,15 +186,137 @@
     },
     {
       "id": 11,
+      "title": "Request Error Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 28, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "custom": { "lineWidth": 2, "fillOpacity": 10 }, "color": { "mode": "palette-classic" } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_operation_duration_count{error!=\"\", gen_ai_request_model=~\"$model\"}[5m])) / sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_operation_duration_count{gen_ai_request_model=~\"$model\"}[5m]))",
+          "legendFormat": "{{gen_ai_request_model}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Edit Acceptance Trend",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 28, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "custom": { "lineWidth": 2, "fillOpacity": 10 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum(rate(copilot_copilot_chat_edit_acceptance_count_total{copilot_chat_edit_outcome=\"accepted\"}[5m])) / sum(rate(copilot_copilot_chat_edit_acceptance_count_total[5m]))",
+          "legendFormat": "Acceptance rate"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Top Tools by Call Volume (24h)",
+      "type": "barchart",
+      "gridPos": { "x": 0, "y": 36, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "options": { "orientation": "horizontal", "xField": "gen_ai_tool_name", "legend": { "displayMode": "hidden" } },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (gen_ai_tool_name) (increase(copilot_copilot_chat_tool_call_count_total[24h])))",
+          "legendFormat": "{{gen_ai_tool_name}}",
+          "format": "table",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Token Efficiency (Output / Input Ratio)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 36, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 5 }, "decimals": 2 } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_token_usage_count{gen_ai_token_type=\"output\", gen_ai_request_model=~\"$model\"}[5m])) / sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_token_usage_count{gen_ai_token_type=\"input\", gen_ai_request_model=~\"$model\"}[5m]))",
+          "legendFormat": "{{gen_ai_request_model}}"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Sessions by Hour of Day",
+      "type": "barchart",
+      "gridPos": { "x": 0, "y": 44, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "continuous-blues" } } },
+      "options": { "orientation": "vertical", "legend": { "displayMode": "hidden" } },
+      "targets": [
+        {
+          "expr": "sum by (le) (increase(copilot_copilot_chat_session_count_total[1h]))",
+          "legendFormat": "Sessions",
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Request Throughput (req/min)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 44, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "reqpm", "custom": { "lineWidth": 2, "fillOpacity": 15 } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_operation_duration_count{gen_ai_request_model=~\"$model\"}[5m])) * 60",
+          "legendFormat": "{{gen_ai_request_model}}"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Lines of Code Over Time",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 52, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 20, "stacking": { "mode": "normal" } } } },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum by (type) (rate(copilot_copilot_chat_lines_of_code_count_total[5m]) * 300)",
+          "legendFormat": "{{type}}"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Model Usage Distribution (24h)",
+      "type": "piechart",
+      "gridPos": { "x": 12, "y": 52, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": { "defaults": { "unit": "short", "color": { "mode": "palette-classic" } } },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "values": ["percent", "value"] }, "pieType": "donut", "reduceOptions": { "calcs": ["sum"] } },
+      "targets": [
+        {
+          "expr": "sum by (gen_ai_request_model) (increase(copilot_gen_ai_client_token_usage_count{gen_ai_request_model=~\"$model\"}[24h]))",
+          "legendFormat": "{{gen_ai_request_model}}",
+          "format": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 19,
       "title": "Recent Traces (Jaeger)",
       "type": "traces",
-      "gridPos": { "x": 0, "y": 28, "w": 24, "h": 10 },
+      "gridPos": { "x": 0, "y": 60, "w": 24, "h": 10 },
       "datasource": { "type": "jaeger", "uid": "jaeger" },
       "targets": [
         {
           "queryType": "search",
-          "serviceName": "copilot-chat",
-          "operationName": "invoke_agent",
           "limit": 20
         }
       ]
