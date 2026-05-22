@@ -285,11 +285,11 @@
       },
       "targets": [
         {
-          "expr": "sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_token_usage_sum{service_name=~\"$service\", gen_ai_token_type=\"input\", gen_ai_request_model=~\"$model\"}[5m]) * 300)",
+          "expr": "sum by (gen_ai_request_model) (increase(copilot_gen_ai_client_token_usage_sum{service_name=~\"$service\", gen_ai_token_type=\"input\", gen_ai_request_model=~\"$model\"}[5m]))",
           "legendFormat": "Input - {{gen_ai_request_model}}"
         },
         {
-          "expr": "sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_token_usage_sum{service_name=~\"$service\", gen_ai_token_type=\"output\", gen_ai_request_model=~\"$model\"}[5m]) * 300)",
+          "expr": "sum by (gen_ai_request_model) (increase(copilot_gen_ai_client_token_usage_sum{service_name=~\"$service\", gen_ai_token_type=\"output\", gen_ai_request_model=~\"$model\"}[5m]))",
           "legendFormat": "Output - {{gen_ai_request_model}}"
         }
       ]
@@ -666,7 +666,7 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(copilot_copilot_chat_session_count_total{service_name=~\"$service\"}[5m]) * 3600)",
+          "expr": "sum(increase(copilot_copilot_chat_session_count_total{service_name=~\"$service\"}[1h]))",
           "legendFormat": "Sessions/hr"
         }
       ]
@@ -747,7 +747,7 @@
       },
       "targets": [
         {
-          "expr": "sum by (type) (rate(copilot_copilot_chat_lines_of_code_count_total{service_name=~\"$service\"}[5m]) * 300)",
+          "expr": "sum by (type) (increase(copilot_copilot_chat_lines_of_code_count_total{service_name=~\"$service\"}[5m]))",
           "legendFormat": "{{type}}"
         }
       ]
