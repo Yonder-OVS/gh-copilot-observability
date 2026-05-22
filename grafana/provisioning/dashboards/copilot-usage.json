@@ -425,10 +425,19 @@
         "xTickLabelRotation": -45,
         "xTickLabelMaxLength": 20
       },
+      "transformations": [
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": ["copilot_chat_edit_outcome"],
+            "keepFields": false
+          }
+        }
+      ],
       "targets": [
         {
           "expr": "sum by (copilot_chat_edit_source, copilot_chat_edit_outcome) (increase(copilot_copilot_chat_edit_acceptance_count_total{service_name=~\"$service\"}[24h]))",
-          "legendFormat": "{{copilot_chat_edit_source}} - {{copilot_chat_edit_outcome}}",
+          "legendFormat": "{{copilot_chat_edit_outcome}}",
           "format": "table",
           "instant": true
         }
@@ -436,7 +445,7 @@
     },
     {
       "id": 10,
-      "title": "Lines of Code Added/Removed by Agent",
+      "title": "Lines of Code Added/Removed (Agent Edits)",
       "type": "barchart",
       "gridPos": {
         "x": 12,
@@ -505,7 +514,7 @@
       },
       "targets": [
         {
-          "expr": "(sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_operation_duration_count{service_name=~\"$service\", error_type!=\"\", gen_ai_request_model=~\"$model\"}[5m])) or on() vector(0)) / sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_operation_duration_count{service_name=~\"$service\", gen_ai_request_model=~\"$model\"}[5m]))",
+          "expr": "sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_operation_duration_count{service_name=~\"$service\", error_type!=\"\", gen_ai_request_model=~\"$model\"}[5m])) / sum by (gen_ai_request_model) (rate(copilot_gen_ai_client_operation_duration_count{service_name=~\"$service\", gen_ai_request_model=~\"$model\"}[5m]))",
           "legendFormat": "{{gen_ai_request_model}}"
         }
       ]
@@ -754,7 +763,7 @@
     },
     {
       "id": 18,
-      "title": "Token Share by Model (24h)",
+      "title": "Total Token Share (input+output) by Model (24h)",
       "type": "piechart",
       "gridPos": {
         "x": 12,
@@ -959,7 +968,7 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "ms",
+          "unit": "s",
           "custom": {
             "lineWidth": 2
           }
@@ -1046,16 +1055,26 @@
       },
       "options": {
         "xField": "copilot_chat_edit_outcome",
+        "stacking": "normal",
         "xTickLabelRotation": -45,
         "legend": {
           "displayMode": "list",
           "placement": "bottom"
         }
       },
+      "transformations": [
+        {
+          "id": "partitionByValues",
+          "options": {
+            "fields": ["copilot_chat_edit_source"],
+            "keepFields": false
+          }
+        }
+      ],
       "targets": [
         {
           "expr": "sum by (copilot_chat_edit_outcome, copilot_chat_edit_source) (increase(copilot_copilot_chat_chat_edit_outcome_count_total{service_name=~\"$service\"}[24h]))",
-          "legendFormat": "{{copilot_chat_edit_outcome}} - {{copilot_chat_edit_source}}",
+          "legendFormat": "{{copilot_chat_edit_source}}",
           "format": "table",
           "instant": true
         }
