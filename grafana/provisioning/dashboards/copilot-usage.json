@@ -499,8 +499,12 @@
       "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } },
       "targets": [
         {
-          "expr": "sum by (copilot_chat_feedback) (rate(copilot_copilot_chat_user_feedback_count_total[5m]) * 60) or on() vector(0)",
-          "legendFormat": "{{copilot_chat_feedback}}"
+          "expr": "sum(rate(copilot_copilot_chat_user_feedback_count_total{rating=\"positive\"}[5m]) * 60) or on() vector(0)",
+          "legendFormat": "positive"
+        },
+        {
+          "expr": "sum(rate(copilot_copilot_chat_user_feedback_count_total{rating=\"negative\"}[5m]) * 60) or on() vector(0)",
+          "legendFormat": "negative"
         }
       ]
     }
