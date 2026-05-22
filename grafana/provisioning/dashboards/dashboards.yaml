@@ -1,9 +1,9 @@
 apiVersion: 1
 
 providers:
-  - name: copilot
+  - name: ai-coding-agents
     orgId: 1
-    folder: "GitHub Copilot"
+    folder: "AI Coding Agents"
     type: file
     disableDeletion: false
     updateIntervalSeconds: 30

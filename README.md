@@ -1,7 +1,7 @@
-# GitHub Copilot OTel Monitoring — Azure-Free Stack
+# AI Coding Agent OTel Monitoring — Azure-Free Stack
 
-Monitors your VS Code GitHub Copilot usage (traces, metrics, logs) with a fully
-local, open-source stack. No Azure account required.
+Monitors VS Code GitHub Copilot and Claude Code usage (traces, metrics, logs)
+with a fully local, open-source stack. No Azure account required.
 
 ## Stack
 
@@ -43,11 +43,42 @@ To also capture full prompts and responses (⚠️ may contain sensitive code):
 }
 ```
 
+## Configure Claude Code
+
+Add to `~/.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
+    "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE": "cumulative",
+    "OTEL_METRIC_EXPORT_INTERVAL": "10000",
+    "OTEL_LOGS_EXPORT_INTERVAL": "5000"
+  }
+}
+```
+
+To also capture Claude Code traces in Jaeger:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "CLAUDE_CODE_ENHANCED_TELEMETRY_BETA": "1",
+    "OTEL_TRACES_EXPORTER": "otlp"
+  }
+}
+```
+
 ## What Gets Captured
 
 - **Traces** — Full `invoke_agent → chat → execute_tool` span trees per interaction
-- **Metrics** — Token usage, LLM latency, TTFT, tool call counts, edit acceptance rates, lines of code
-- **Events / Logs** — Session starts, per-tool invocations, user feedback (thumbs up/down), edit survival
+- **Metrics** — Token usage, cost, LLM latency, TTFT, tool call counts, edit acceptance rates, lines of code
+- **Events / Logs** — Session starts, API requests, per-tool invocations, user feedback, edit survival, Claude Code audit events
 
 ## Grafana Dashboard
 
@@ -63,10 +94,17 @@ The pre-provisioned **"GitHub Copilot — Usage & Performance"** dashboard shows
 - Lines of code added/removed
 - Live trace explorer (Jaeger panel)
 
+The pre-provisioned **"Claude Code — Usage & Cost"** dashboard shows:
+- Cost and token totals over the last 24 hours
+- Token usage over time by type and model
+- Claude Code sessions and active time
+- Lines of code, commits, pull requests, and edit decisions
+- Recent Claude Code events from Loki
+
 ## Data Routing
 
 ```
-VS Code (otlp-http :4318)
+VS Code / Claude Code (otlp-http :4318, otlp-grpc :4317)
     │
     └─► OTel Collector
             ├─► Jaeger :4317      → traces
