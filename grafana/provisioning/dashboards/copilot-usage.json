@@ -476,16 +476,31 @@
     },
     {
       "id": 27,
-      "title": "Avg Tokens per LLM Call (24h)",
+      "title": "Avg Input Tokens per LLM Call (24h)",
       "type": "stat",
-      "gridPos": { "x": 6, "y": 94, "w": 6, "h": 4 },
+      "gridPos": { "x": 6, "y": 94, "w": 3, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
       "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "auto" },
       "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "blue", "value": null }] }, "unit": "short", "decimals": 0 } },
       "targets": [
         {
-          "expr": "sum(increase(copilot_gen_ai_client_token_usage_sum{gen_ai_request_model=~\"$model\"}[24h])) / sum(increase(copilot_gen_ai_client_token_usage_count{gen_ai_request_model=~\"$model\"}[24h]))",
-          "legendFormat": "Avg tokens/call"
+          "expr": "sum(increase(copilot_gen_ai_client_token_usage_sum{gen_ai_token_type=\"input\", gen_ai_request_model=~\"$model\"}[24h])) / sum(increase(copilot_gen_ai_client_operation_duration_count{gen_ai_request_model=~\"$model\"}[24h]))",
+          "legendFormat": "Avg input tokens/call"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "title": "Avg Output Tokens per LLM Call (24h)",
+      "type": "stat",
+      "gridPos": { "x": 9, "y": 94, "w": 3, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "none", "textMode": "auto" },
+      "fieldConfig": { "defaults": { "color": { "mode": "thresholds" }, "thresholds": { "steps": [{ "color": "green", "value": null }] }, "unit": "short", "decimals": 0 } },
+      "targets": [
+        {
+          "expr": "sum(increase(copilot_gen_ai_client_token_usage_sum{gen_ai_token_type=\"output\", gen_ai_request_model=~\"$model\"}[24h])) / sum(increase(copilot_gen_ai_client_operation_duration_count{gen_ai_request_model=~\"$model\"}[24h]))",
+          "legendFormat": "Avg output tokens/call"
         }
       ]
     },
